@@ -35,18 +35,20 @@ export default function Report() {
 
       // -------- TITLE --------
       doc.setFontSize(20);
+      doc.setTextColor(15, 23, 42);
       doc.text(group.name, 14, 20);
 
       doc.setFontSize(10);
-      doc.setTextColor(120);
+      doc.setTextColor(100, 100, 100);
       doc.text(
         `Expense Report | Generated on ${new Date().toLocaleDateString()}`,
         14,
         26
       );
+      doc.setDrawColor(200, 200, 200);
       doc.line(14, 30, 196, 30);
 
-      // -------- DATA --------
+      // -------- DATA PROCESSING --------
       const realExpenses = group.expenses.filter(
         e => e.description !== 'Settlement Payment'
       );
@@ -71,8 +73,7 @@ export default function Report() {
       const paymentHistoryBody = settledExpenses.map(exp => {
         const fromName = exp.paidBy?.name || 'Unknown';
         const toId = exp.shares[0]?.user;
-        const toName =
-          group.members.find(m => m._id === toId)?.name || 'Unknown';
+        const toName = group.members.find(m => m._id === toId)?.name || 'Unknown';
         return [
           fromName,
           toName,
@@ -86,8 +87,9 @@ export default function Report() {
         group.members
       );
 
-      // -------- SECTION 1 --------
+      // -------- SECTION 1: Total Spending --------
       doc.setFontSize(14);
+      doc.setTextColor(0, 0, 0);
       doc.text(
         `1. Total Group Spending: ${formatCurrency(totalGroupSpend)}`,
         14,
@@ -101,11 +103,14 @@ export default function Report() {
           m.name,
           formatCurrency(m.amount),
         ]),
+        theme: 'striped',
+        headStyles: { fillColor: [15, 23, 42] },
       });
 
       finalY = doc.lastAutoTable.finalY + 15;
 
-      // -------- SECTION 2 --------
+      // -------- SECTION 2: Payment History --------
+      doc.setFontSize(14);
       doc.text('2. Payment History', 14, finalY);
 
       if (paymentHistoryBody.length) {
@@ -113,14 +118,22 @@ export default function Report() {
           startY: finalY + 5,
           head: [['Payer', 'Receiver', 'Amount', 'Date']],
           body: paymentHistoryBody,
+          theme: 'grid',
+          headStyles: { fillColor: [5, 150, 105] },
         });
-        finalY = doc.lastAutoTable.finalY + 15;
       } else {
+        doc.setFontSize(10);
+        doc.setTextColor(100, 100, 100);
         doc.text('No payments yet.', 14, finalY + 8);
-        finalY += 20;
+        // table na thakle manual spacing
+        doc.lastAutoTable = { finalY: finalY + 10 };
       }
 
-      // -------- SECTION 3 --------
+      finalY = doc.lastAutoTable.finalY + 15;
+
+      // -------- SECTION 3: Pending Balances --------
+      doc.setFontSize(14);
+      doc.setTextColor(0, 0, 0);
       doc.text('3. Pending Balances', 14, finalY);
 
       if (pendingSettlements.length) {
@@ -132,9 +145,16 @@ export default function Report() {
             group.members.find(m => m._id === s.to)?.name || 'Unknown',
             formatCurrency(s.amount),
           ]),
+          theme: 'grid',
+          headStyles: { fillColor: [220, 38, 38] },
         });
       } else {
-        doc.text('All balances settled 🎉', 14, finalY + 8);
+        // 🔥 FIX FOR ANDROID GARBAGE TEXT STARTS HERE 🔥
+        doc.setFont("helvetica", "normal"); // Force standard font
+        doc.setFontSize(11);
+        doc.setTextColor(5, 150, 105); // Green color
+        // ইমোজি সরিয়ে দেওয়া হয়েছে
+        doc.text('All balances are settled!', 14, finalY + 10);
       }
 
       // -------- SAVE FILE --------
@@ -143,19 +163,21 @@ export default function Report() {
       if (Capacitor.isNativePlatform()) {
         const base64 = doc.output('datauristring').split(',')[1];
 
+        // Documents এর বদলে Cache ব্যবহার করছি যা সব অ্যান্ড্রয়েড ভার্সনে নিরাপদ
         const savedFile = await Filesystem.writeFile({
           path: fileName,
           data: base64,
-          directory: Directory.Documents,
+          directory: Directory.Cache, 
         });
 
         await Share.share({
           title: 'SplitPay Report',
-          text: 'Expense report',
+          text: `Expense report for ${group.name}`,
           url: savedFile.uri,
+          dialogTitle: 'Download Report',
         });
 
-        toast.success('Report ready to save');
+        toast.success('File ready to share!');
       } else {
         doc.save(fileName);
         toast.success('Report downloaded');
@@ -170,31 +192,38 @@ export default function Report() {
 
   return (
     <div className="px-4 pt-5 pb-24">
-      <h1 className="text-xl font-semibold mb-2">Expense Reports</h1>
-      <p className="text-sm text-slate-600 mb-4">
-        Download full group expense report
-      </p>
+      <div className="mb-6">
+        <h1 className="text-xl font-semibold tracking-tight">Expense Reports</h1>
+        <p className="text-sm text-slate-600">Download detailed PDF summaries.</p>
+      </div>
 
-      <select
-        className="w-full h-11 rounded-xl border px-3 mb-4"
-        value={selectedGroupId}
-        onChange={e => setSelectedGroupId(e.target.value)}
-      >
-        <option value="">Select Group</option>
-        {groups.map(g => (
-          <option key={g._id} value={g._id}>
-            {g.name}
-          </option>
-        ))}
-      </select>
+      <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-4">
+        <div>
+          <label className="text-xs font-semibold text-slate-700 block mb-2">Select Group</label>
+          <select
+            className="w-full h-11 rounded-2xl border border-slate-200 bg-slate-50 px-3 text-sm font-semibold outline-none"
+            value={selectedGroupId}
+            onChange={e => setSelectedGroupId(e.target.value)}
+          >
+            <option value="">Select Group</option>
+            {groups.map(g => (
+              <option key={g._id} value={g._id}>
+                {g.name}
+              </option>
+            ))}
+          </select>
+        </div>
 
-      <Button
-        className="w-full"
-        onClick={generatePDF}
-        disabled={loading || !selectedGroupId}
-      >
-        {loading ? 'Generating...' : <><Download size={18} /> Download Report</>}
-      </Button>
+        <div className="pt-2">
+          <Button
+            className="w-full"
+            onClick={generatePDF}
+            disabled={loading || !selectedGroupId}
+          >
+            {loading ? 'Generating...' : <><Download size={18} /> Download Report</>}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
