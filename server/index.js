@@ -21,7 +21,6 @@ const allowedOrigins = [
 ];
 
 app.use(cors({
-  origin: true,
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
@@ -33,6 +32,7 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
+
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
