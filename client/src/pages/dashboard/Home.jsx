@@ -3,8 +3,10 @@ import { useAuth } from '../../context/AuthContext';
 import { useGroup } from '../../context/GroupContext';
 import { calculateSettlements } from '../../utils/settlementLogic';
 import { formatCurrency } from '../../utils/format';
-import { RefreshCw, ArrowDown, ArrowUp, Users, Receipt, ArrowRight, Folder } from 'lucide-react'; // Added Folder icon
+import { RefreshCw, ArrowDown, ArrowUp, Users, Receipt, ArrowRight, Folder } from 'lucide-react';
 import { Link } from 'react-router-dom';
+// 1. Import LoadingScreen
+import LoadingScreen from '../../components/ui/LoadingScreen';
 
 export default function Home() {
   const { user } = useAuth();
@@ -14,7 +16,6 @@ export default function Home() {
   const [totalOwe, setTotalOwe] = useState(0);
   const [totalOwed, setTotalOwed] = useState(0);
   const [spinning, setSpinning] = useState(false);
-
 
   useEffect(() => {
     fetchGroups();
@@ -48,23 +49,22 @@ export default function Home() {
 
   const handleFullRefresh = () => {
     setSpinning(true);
-
     window.location.reload();
-
     setTimeout(() => {
       setSpinning(false);
-    }, 800); // spin duration
+    }, 800);
   };
+
+  // 2. Show Loading Screen if loading is true
+  if (loading) {
+    return <LoadingScreen />;
+  }
 
   return (
     <div className="px-4 pt-5 pb-24">
       {/* 1. Header (Original Design) */}
-      <div className="flex items-start justify-between gap-3 mb-6">
+      <div className="flex items-start justify-between gap-3 mb-6 pt-4">
         <div className="flex flex-col">
-          {/* <div className="text-xl font-bold tracking-tight text-slate-900">
-            <span className='text-green-700'>Split </span>
-            <span className='text-red-700'>Pay</span>
-          </div> */}
           <img src="/name.png" alt="" className="w-28 mx-[-6px]" />
           <div className="text-sm text-slate-600">
             {user && user.name ? user.name.split(' ')[0] : 'Guest'}
@@ -76,8 +76,7 @@ export default function Home() {
         >
           <RefreshCw
             size={20}
-            className={`text-slate-900 transition-transform ${spinning ? "animate-spin" : ""
-              }`}
+            className={`text-slate-900 transition-transform ${spinning ? "animate-spin" : ""}`}
           />
         </button>
       </div>
@@ -138,8 +137,6 @@ export default function Home() {
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3">
-            {/* Grid Layout: 2 Columns for small boxes */}
-
             {groups.map(group => (
               <Link
                 key={group._id}

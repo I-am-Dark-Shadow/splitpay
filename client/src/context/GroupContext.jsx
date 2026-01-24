@@ -11,9 +11,21 @@ export const GroupProvider = ({ children }) => {
 
   const fetchGroups = async () => {
     if (!user) return;
+    
+    setLoading(true);
+
     try {
-      const { data } = await api.get('/groups');
-      setGroups(data);
+      // 1. API Call (Real Data)
+      const apiCall = api.get('/groups');
+
+      // 2. Minimum Wait Time (5 Seconds)
+      const minWait = new Promise(resolve => setTimeout(resolve, 5000));
+
+      // 3. Wait for BOTH to finish
+      // Promise.all array-er sobkaj shesh howa por result dey.
+      const [response] = await Promise.all([apiCall, minWait]);
+
+      setGroups(response.data);
     } catch (error) {
       console.error("Failed to fetch groups", error);
     } finally {
