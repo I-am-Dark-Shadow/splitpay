@@ -9,6 +9,11 @@ import { FileText, Download } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
 
+// --- IMPORTS FOR MOBILE DOWNLOAD ---
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
+
 export default function Report() {
   const { groups, fetchGroups } = useGroup();
   const [selectedGroupId, setSelectedGroupId] = useState('');
@@ -17,6 +22,34 @@ export default function Report() {
   useEffect(() => {
     fetchGroups();
   }, []);
+
+  // --- HELPER: SAVE AND SHARE FILE (MOBILE ONLY) ---
+  const saveAndSharePdf = async (fileName, doc) => {
+    try {
+      // 1. Get Base64 string from jsPDF (removing the data URI prefix)
+      const base64String = doc.output('datauristring').split(',')[1];
+
+      // 2. Write file to Cache Directory (No complex permissions needed here)
+      const savedFile = await Filesystem.writeFile({
+        path: fileName,
+        data: base64String,
+        directory: Directory.Cache, 
+      });
+
+      // 3. Open Share Dialog
+      await Share.share({
+        title: 'Expense Report',
+        text: 'Here is your expense report.',
+        url: savedFile.uri,
+        dialogTitle: 'Download Report',
+      });
+      
+      toast.success('Ready to share/save!');
+    } catch (error) {
+      console.error('File Write Error:', error);
+      toast.error('Could not save file on mobile.');
+    }
+  };
 
   const generatePDF = async () => {
     if (!selectedGroupId) return toast.error('Select a group first');
@@ -142,9 +175,17 @@ export default function Report() {
         doc.text("All balances are currently settled!", 14, finalY + 8);
       }
 
-      // Save File
-      doc.save(`${group.name.replace(/\s+/g, '_')}_Full_Report.pdf`);
-      toast.success('Report Downloaded');
+      // --- SAVE FILE (Logic Updated for Mobile/Web) ---
+      const fileName = `${group.name.replace(/\s+/g, '_')}_Full_Report.pdf`;
+
+      if (Capacitor.isNativePlatform()) {
+        // MOBILE APP: Save using Filesystem & Share
+        await saveAndSharePdf(fileName, doc);
+      } else {
+        // WEBSITE: Normal Download
+        doc.save(fileName);
+        toast.success('Report Downloaded');
+      }
 
     } catch (error) {
       console.error(error);

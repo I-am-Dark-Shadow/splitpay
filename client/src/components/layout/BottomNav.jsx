@@ -24,7 +24,7 @@ export default function BottomNav() {
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-30 bg-white/90 backdrop-blur border-t border-slate-200 pb-6">
-      <div className="mx-auto w-full max-w-md px-2 py-2">
+      <div className="mx-auto w-full max-w-md px-4 py-2">
         <div className="grid grid-cols-5 items-end gap-2">
           <NavItem to="/" icon={Home} label="Home" />
           <NavItem to="/groups" icon={Users} label="Groups" />
