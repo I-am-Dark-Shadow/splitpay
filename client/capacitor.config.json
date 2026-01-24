@@ -1,0 +1,9 @@
+{
+  "appId": "com.splitpay.app",
+  "appName": "SplitPay",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "cleartext": true
+  }
+}

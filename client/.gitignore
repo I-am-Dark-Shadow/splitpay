@@ -36,3 +36,4 @@ dist-ssr
 node_modules/
 build/
 dist/
+android/

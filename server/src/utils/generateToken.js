@@ -7,8 +7,8 @@ const generateToken = (res, userId) => {
 
   res.cookie('jwt', token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV !== 'development', // production-এ অবশ্যই true হতে হবে
-    sameSite: process.env.NODE_ENV === 'development' ? 'lax' : 'none', // Vercel-এর জন্য 'none' জরুরি
+    secure: true,
+    sameSite: "none",
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
   });
 };
