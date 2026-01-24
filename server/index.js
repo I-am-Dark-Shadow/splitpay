@@ -20,8 +20,10 @@ app.use(cookieParser());
 
 // CORS Config (Allow credentials for Cookies)
 app.use(cors({
-  origin: process.env.CLIENT_URL,
-  credentials: true
+  origin: process.env.CLIENT_URL, // Vercel Environment Variable থেকে আসবে
+  credentials: true, // কুকি এলাউ করার জন্য এটি মাস্ট
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // API Routes

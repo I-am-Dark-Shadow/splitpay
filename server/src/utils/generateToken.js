@@ -5,11 +5,10 @@ const generateToken = (res, userId) => {
     expiresIn: '30d',
   });
 
-  // Set JWT as HTTP-Only cookie for security
   res.cookie('jwt', token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV !== 'development', // Use secure cookies in production
-    sameSite: 'strict',
+    secure: process.env.NODE_ENV !== 'development', // production-এ অবশ্যই true হতে হবে
+    sameSite: process.env.NODE_ENV === 'development' ? 'lax' : 'none', // Vercel-এর জন্য 'none' জরুরি
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
   });
 };
