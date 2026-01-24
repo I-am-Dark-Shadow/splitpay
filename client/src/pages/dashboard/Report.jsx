@@ -184,7 +184,6 @@ export default function Report() {
       }
     } catch (err) {
       console.error(err);
-      toast.error('Failed to generate report');
     } finally {
       setLoading(false);
     }
