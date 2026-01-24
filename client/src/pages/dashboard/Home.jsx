@@ -67,7 +67,7 @@ export default function Home() {
           </div> */}
           <img src="/name.png" alt="" className="w-28 mx-[-6px]" />
           <div className="text-sm text-slate-600">
-            {user?.name.split(' ')[0]}
+            {user?.name ? user.name.split(' ')[0] : 'User'}
           </div>
         </div>
         <button
