@@ -14,23 +14,11 @@ connectDB();
 const app = express();
 
 // --- CORS CONFIGURATION (UPDATED) ---
-// আপনার ফ্রন্টএন্ড লিংকগুলো এখানে দিন
-const allowedOrigins = [
-  'http://localhost:5173',                  
-  'https://splitpay-pro.vercel.app'         
-];
-
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: true,          // 🔥 allows https://localhost, vercel, webview
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
 
