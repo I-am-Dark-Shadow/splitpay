@@ -33,7 +33,7 @@ export default function Groups() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 pt-6 pb-24">
+    <div className="min-h-screen bg-slate-50 px-4 pt-8 pb-24">
       
       {/* 1. Header Section */}
       <div className="flex items-center justify-between mb-6">

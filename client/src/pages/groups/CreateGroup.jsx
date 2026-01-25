@@ -62,12 +62,12 @@ export default function CreateGroup() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 pt-4">
       {/* Top Bar */}
       <div className="sticky top-0 z-40 bg-slate-50/90 backdrop-blur border-b border-slate-200 px-4 py-3 flex items-center gap-3">
         <button 
           onClick={() => navigate(-1)}
-          className="h-9 w-9 rounded-full hover:bg-slate-100 flex items-center justify-center transition-colors"
+          className="h-10 w-10 rounded-full bg-white border border-slate-200 flex items-center justify-center shadow-sm"
         >
           <ArrowLeft size={20} className="text-slate-900" />
         </button>

@@ -190,7 +190,7 @@ export default function Report() {
   };
 
   return (
-    <div className="px-4 pt-5 pb-24">
+    <div className="px-4 pt-8 pb-24 ">
       <div className="mb-6">
         <h1 className="text-xl font-semibold tracking-tight">Expense Reports</h1>
         <p className="text-sm text-slate-600">Download detailed PDF summaries.</p>

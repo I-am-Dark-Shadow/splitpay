@@ -122,3 +122,49 @@ export const getRecentActivity = async (req, res) => {
     res.status(500).json({ message: 'Server Error' });
   }
 };
+
+// @desc    Add member to existing group
+// @route   PUT /api/groups/:id/members
+export const addMemberToGroup = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const groupId = req.params.id;
+
+    // 1. Find User by Email
+    const userToAdd = await User.findOne({ email });
+
+    if (!userToAdd) {
+      return res.status(404).json({ message: 'User not found with this email' });
+    }
+
+    // 2. Find Group
+    const group = await Group.findById(groupId);
+
+    if (!group) {
+      return res.status(404).json({ message: 'Group not found' });
+    }
+
+    // 3. Check if user already exists in group
+    if (group.members.includes(userToAdd._id)) {
+      return res.status(400).json({ message: 'User already in the group' });
+    }
+
+    // 4. Add User and Save
+    group.members.push(userToAdd._id);
+    await group.save();
+
+    // 5. Return updated group with populated members
+    const updatedGroup = await Group.findById(groupId)
+      .populate('members', 'name email')
+      .populate({
+        path: 'expenses',
+        populate: { path: 'paidBy', select: 'name' }
+      });
+
+    res.json(updatedGroup);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+};

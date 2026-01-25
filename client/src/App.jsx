@@ -1,54 +1,62 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { GroupProvider } from './context/GroupContext';
 import AppLayout from './components/layout/AppLayout';
+import LoadingScreen from './components/ui/LoadingScreen'; // আপনার তৈরি করা লোডিং স্ক্রিন
 
-// Pages
-import Login from './pages/auth/Login';
-import Register from './pages/auth/Register';
-import Home from './pages/dashboard/Home';
-import Groups from './pages/groups/Groups';
-import CreateGroup from './pages/groups/CreateGroup';
-import GroupDetails from './pages/groups/GroupDetails';
-import AddExpense from './pages/expenses/AddExpense';
-import Settlement from './pages/expenses/Settlement';
-import Activity from './pages/dashboard/Activity';
-import Profile from './pages/dashboard/Profile';
-import Report from './pages/dashboard/Report'; // Import Report Page
+// --- LAZY IMPORTS (Code Splitting) ---
+const Login = lazy(() => import('./pages/auth/Login'));
+const Register = lazy(() => import('./pages/auth/Register'));
+const Home = lazy(() => import('./pages/dashboard/Home'));
+const Groups = lazy(() => import('./pages/groups/Groups'));
+const CreateGroup = lazy(() => import('./pages/groups/CreateGroup'));
+const GroupDetails = lazy(() => import('./pages/groups/GroupDetails'));
+const AddExpense = lazy(() => import('./pages/expenses/AddExpense'));
+const Settlement = lazy(() => import('./pages/expenses/Settlement'));
+const Profile = lazy(() => import('./pages/dashboard/Profile'));
+const Report = lazy(() => import('./pages/dashboard/Report'));
+const ToPay = lazy(() => import('./pages/dashboard/ToPay'));
+const ToReceive = lazy(() => import('./pages/dashboard/ToReceive'));
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
-  if (loading) return <div className="flex h-screen items-center justify-center bg-slate-50 text-slate-400">Loading...</div>;
+  if (loading) return <LoadingScreen />; // Auth লোড হওয়ার সময়ও সুন্দর লোডার দেখাবে
   return user ? children : <Navigate to="/login" />;
 };
 
 function AppRoutes() {
   return (
-    <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      
-      {/* Protected Layout Routes */}
-      <Route element={<PrivateRoute><AppLayout /></PrivateRoute>}>
-        <Route path="/" element={<Home />} />
+    // Suspense: পেজ লোড হওয়ার মাঝখানের সময়ে LoadingScreen দেখাবে
+    <Suspense fallback={<LoadingScreen />}>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         
-        {/* Groups */}
-        <Route path="/groups" element={<Groups />} />
-        <Route path="/groups/create" element={<CreateGroup />} />
-        <Route path="/groups/:id" element={<GroupDetails />} />
-        
-        {/* Expenses */}
-        <Route path="/add-expense" element={<AddExpense />} />
-        <Route path="/groups/:id/add-expense" element={<AddExpense />} />
-        <Route path="/groups/:id/settlement" element={<Settlement />} />
-        
-        {/* Other Tabs */}
-        <Route path="/activity" element={<Activity />} />
-        <Route path="/report" element={<Report />} />
-        <Route path="/profile" element={<Profile />} />
-      </Route>
-    </Routes>
+        {/* Protected Layout Routes */}
+        <Route element={<PrivateRoute><AppLayout /></PrivateRoute>}>
+          <Route path="/" element={<Home />} />
+          <Route path="/to-pay" element={<ToPay />} />
+          <Route path="/to-receive" element={<ToReceive />} />
+          
+          {/* Groups */}
+          <Route path="/groups" element={<Groups />} />
+          <Route path="/groups/create" element={<CreateGroup />} />
+          <Route path="/groups/:id" element={<GroupDetails />} />
+          
+          {/* Expenses */}
+          <Route path="/add-expense" element={<AddExpense />} />
+          <Route path="/groups/:id/add-expense" element={<AddExpense />} />
+          <Route path="/groups/:id/settlement" element={<Settlement />} />
+          
+          {/* Other Tabs */}
+          <Route path="/report" element={<Report />} />
+          <Route path="/profile" element={<Profile />} />
+          
+        </Route>
+      </Routes>
+    </Suspense>
   );
 }
 
@@ -59,7 +67,7 @@ export default function App() {
         <GroupProvider>
           <AppRoutes />
           
-          {/* TOAST CONFIGURATION - CHANGED TO TOP */}
+          {/* TOAST CONFIGURATION */}
           <Toaster 
             position="top-center" 
             toastOptions={{
@@ -72,13 +80,13 @@ export default function App() {
               },
               success: {
                 iconTheme: {
-                  primary: '#10b981', // Emerald green
+                  primary: '#10b981', 
                   secondary: '#fff',
                 },
               },
               error: {
                 iconTheme: {
-                  primary: '#ef4444', // Red
+                  primary: '#ef4444', 
                   secondary: '#fff',
                 },
               },

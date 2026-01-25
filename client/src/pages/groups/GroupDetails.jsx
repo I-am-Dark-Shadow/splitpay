@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import { formatCurrency, formatDate } from '../../utils/format';
 import { calculateSettlements } from '../../utils/settlementLogic';
-import { ArrowLeft, PlusCircle, Users, ArrowRight } from 'lucide-react';
+import { ArrowLeft, PlusCircle, Users, ArrowRight, UserPlus, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function GroupDetails() {
@@ -14,9 +14,16 @@ export default function GroupDetails() {
   const [group, setGroup] = useState(null);
   const [loading, setLoading] = useState(true);
   
+  // Add Member State
+  const [showAddMember, setShowAddMember] = useState(false);
+  const [newMemberEmail, setNewMemberEmail] = useState('');
+  const [addingMember, setAddingMember] = useState(false);
+  
   // Balances
   const [totalSpent, setTotalSpent] = useState(0);
   const [myDebts, setMyDebts] = useState({ owe: [], owed: [] });
+  // ✅ New State: Check if group is fully settled
+  const [isGlobalSettled, setIsGlobalSettled] = useState(false);
 
   useEffect(() => {
     fetchGroupDetails();
@@ -35,6 +42,25 @@ export default function GroupDetails() {
     }
   };
 
+  const handleAddMember = async () => {
+    if (!newMemberEmail) return toast.error('Please enter an email');
+    
+    setAddingMember(true);
+    try {
+      const { data } = await api.put(`/groups/${id}/members`, { email: newMemberEmail });
+      setGroup(data);
+      calculateStats(data);
+      toast.success('Member added successfully!');
+      setShowAddMember(false);
+      setNewMemberEmail('');
+    } catch (error) {
+      console.error(error);
+      toast.error(error.response?.data?.message || 'Failed to add member');
+    } finally {
+      setAddingMember(false);
+    }
+  };
+
   const calculateStats = (groupData) => {
     if (!groupData.expenses) return;
 
@@ -46,6 +72,14 @@ export default function GroupDetails() {
     const iOwe = settlements.filter(s => s.from === user._id);
     const owedToMe = settlements.filter(s => s.to === user._id);
     setMyDebts({ owe: iOwe, owed: owedToMe });
+
+    // ✅ Logic to disable buttons: 
+    // If expenses exist (>0) AND settlements are empty (0), it means fully settled.
+    if (groupData.expenses.length > 0 && settlements.length === 0) {
+      setIsGlobalSettled(true);
+    } else {
+      setIsGlobalSettled(false);
+    }
   };
 
   const getMemberName = (userId) => {
@@ -71,11 +105,11 @@ export default function GroupDetails() {
   if (!group) return <div className="p-10 text-center">Group not found</div>;
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24">
+    <div className="min-h-screen bg-slate-50 pb-24 pt-6 relative">
       {/* Top Bar */}
       <div className="sticky top-0 z-40 bg-slate-50/90 backdrop-blur border-b border-slate-200 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate('/')} className="h-9 w-9 rounded-full hover:bg-slate-100 flex items-center justify-center">
+          <button onClick={() => navigate('/')} className="h-10 w-10 rounded-full bg-white border border-slate-200 flex items-center justify-center shadow-sm">
             <ArrowLeft size={20} className="text-slate-900" />
           </button>
           <div>
@@ -83,12 +117,38 @@ export default function GroupDetails() {
             <div className="text-xs text-slate-500">{group.members.length} members</div>
           </div>
         </div>
-        <Link 
-          to={`/groups/${id}/add-expense`}
-          className="h-9 px-3 rounded-xl bg-slate-900 text-white text-xs font-semibold flex items-center gap-1 hover:bg-slate-800"
-        >
-          <PlusCircle size={16} /> Add
-        </Link>
+        
+        <div className="flex items-center gap-2">
+          {/* ✅ Add Member Button: Disabled if settled */}
+          <button 
+            onClick={() => setShowAddMember(true)}
+            disabled={isGlobalSettled}
+            className={`h-9 w-9 rounded-xl mx-1 flex items-center justify-center transition-all ${
+              isGlobalSettled 
+                ? 'bg-slate-200 text-slate-400 cursor-not-allowed' 
+                : 'bg-slate-900 text-white hover:bg-slate-700'
+            }`}
+          >
+            <UserPlus size={18} />
+          </button>
+
+          {/* ✅ Add Expense Button: Disabled if settled */}
+          {isGlobalSettled ? (
+            <button
+              disabled
+              className="h-9 px-3 rounded-xl bg-slate-200 text-slate-400 text-xs font-semibold flex items-center gap-1 cursor-not-allowed"
+            >
+               <PlusCircle size={16} /> Add
+            </button>
+          ) : (
+            <Link 
+              to={`/groups/${id}/add-expense`}
+              className="h-9 px-3 rounded-xl bg-slate-900 text-white text-xs font-semibold flex items-center gap-1 hover:bg-slate-700"
+            >
+              <PlusCircle size={16} /> Add
+            </Link>
+          )}
+        </div>
       </div>
 
       <div className="px-4 pt-5 space-y-4">
@@ -114,7 +174,6 @@ export default function GroupDetails() {
               ))}
             </div>
 
-            {/* BUTTON STYLE CHANGE: Full width button */}
             <Link 
               to={`/groups/${id}/settlement`} 
               className="flex items-center justify-center w-full py-3 rounded-xl bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800 active:scale-[0.98] transition-all shadow-md shadow-slate-900/10"
@@ -170,6 +229,47 @@ export default function GroupDetails() {
           )}
         </div>
       </div>
+
+      {/* --- ADD MEMBER MODAL --- */}
+      {showAddMember && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setShowAddMember(false)}></div>
+          <div className="relative bg-white rounded-3xl shadow-xl w-full max-w-sm p-6 animate-in fade-in zoom-in duration-200">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-bold text-slate-900">Add New Member</h3>
+              <button onClick={() => setShowAddMember(false)} className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+                <X size={18} />
+              </button>
+            </div>
+            
+            <p className="text-sm text-slate-500 mb-4">
+              Enter the email address of the person you want to add to <b>{group.name}</b>.
+            </p>
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs font-semibold text-slate-700 block mb-2">Email Address</label>
+                <input 
+                  type="email" 
+                  value={newMemberEmail}
+                  onChange={(e) => setNewMemberEmail(e.target.value)}
+                  placeholder="friend@example.com"
+                  className="w-full h-12 rounded-xl border border-slate-200 px-4 text-sm outline-none focus:border-slate-900 bg-slate-50"
+                />
+              </div>
+
+              <button 
+                onClick={handleAddMember}
+                disabled={addingMember}
+                className="w-full py-3 rounded-xl bg-slate-900 text-white font-semibold text-sm hover:bg-slate-800 disabled:opacity-70"
+              >
+                {addingMember ? 'Adding...' : 'Add Member'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

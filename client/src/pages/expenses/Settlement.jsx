@@ -85,9 +85,9 @@ export default function Settlement() {
   if (loading) return <div className="p-10 text-center">Loading...</div>;
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-20 relative">
+    <div className="min-h-screen bg-slate-50 pb-20 relative pt-6">
       <div className="sticky top-0 z-40 bg-slate-50/90 backdrop-blur border-b border-slate-200 px-4 py-3 flex items-center gap-3">
-        <button onClick={() => navigate(-1)} className="h-9 w-9 rounded-full hover:bg-slate-100 flex items-center justify-center">
+        <button onClick={() => navigate(-1)} className="h-10 w-10 rounded-full bg-white border border-slate-200 flex items-center justify-center shadow-sm">
           <ArrowLeft size={20} className="text-slate-900" />
         </button>
         <div className="text-base font-semibold">Settlement Plan</div>

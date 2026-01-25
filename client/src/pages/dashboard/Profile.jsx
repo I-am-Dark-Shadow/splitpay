@@ -16,7 +16,7 @@ export default function Profile() {
     <div className="px-4 pt-5 relative min-h-screen pb-20">
       
       {/* 1. Header Profile Card */}
-      <div className="flex items-center gap-4 mb-8 pt-2">
+      <div className="flex items-center gap-4 mb-8 pt-4">
         <div className="h-16 w-16 rounded-full bg-slate-900 text-white flex items-center justify-center text-xl font-bold shadow-lg shadow-slate-900/20">
           {initials}
         </div>

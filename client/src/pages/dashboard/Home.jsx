@@ -5,7 +5,6 @@ import { calculateSettlements } from '../../utils/settlementLogic';
 import { formatCurrency } from '../../utils/format';
 import { RefreshCw, ArrowDown, ArrowUp, Users, Receipt, ArrowRight, Folder } from 'lucide-react';
 import { Link } from 'react-router-dom';
-// 1. Import LoadingScreen
 import LoadingScreen from '../../components/ui/LoadingScreen';
 
 export default function Home() {
@@ -55,7 +54,7 @@ export default function Home() {
     }, 800);
   };
 
-  // 2. Show Loading Screen if loading is true
+  // Show Loading Screen if loading is true
   if (loading) {
     return <LoadingScreen />;
   }
@@ -81,9 +80,14 @@ export default function Home() {
         </button>
       </div>
 
-      {/* 2. Balance Cards (Original Design) */}
+      {/* 2. Balance Cards (UPDATED WITH LINKS) */}
       <div className="grid grid-cols-2 gap-3 mb-6">
-        <div className="bg-white border border-slate-200 rounded-3xl shadow-sm p-4">
+        
+        {/* Card 1: To Pay */}
+        <Link 
+          to="/to-pay" 
+          className="bg-white border border-slate-200 rounded-3xl hover:shadow-lg shadow-sm p-4 active:scale-95 transition-transform"
+        >
           <div className="flex items-center justify-between">
             <div className="text-xs text-slate-500">You need to pay</div>
             <div className="h-8 w-8 rounded-full bg-rose-50 border border-rose-100 flex items-center justify-center">
@@ -94,9 +98,13 @@ export default function Home() {
             {formatCurrency(totalOwe)}
           </div>
           <div className="text-xs text-slate-400 mt-1">Total across groups</div>
-        </div>
+        </Link>
 
-        <div className="bg-white border border-slate-200 rounded-3xl shadow-sm p-4">
+        {/* Card 2: To Receive */}
+        <Link 
+          to="/to-receive"
+          className="bg-white border border-slate-200 rounded-3xl hover:shadow-lg shadow-sm p-4 active:scale-95 transition-transform"
+        >
           <div className="flex items-center justify-between">
             <div className="text-xs text-slate-500">You will receive</div>
             <div className="h-8 w-8 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center">
@@ -107,7 +115,7 @@ export default function Home() {
             {formatCurrency(totalOwed)}
           </div>
           <div className="text-xs text-slate-400 mt-1">Total across groups</div>
-        </div>
+        </Link>
       </div>
 
       {/* 3. Quick Actions (Original Design) */}
@@ -125,7 +133,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* 4. NEW SECTION: Group Grid (Simple Boxes) */}
+      {/* 4. Group Grid (Simple Boxes) */}
       <div>
         <div className="flex items-center justify-between mb-4 px-1">
           <div className="text-sm font-bold text-slate-900">Your Groups</div>
