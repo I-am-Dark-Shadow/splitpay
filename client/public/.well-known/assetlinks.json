@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.splitpay.app",
+      "sha256_cert_fingerprints": [
+        "C8:F3:53:C6:6D:FA:7C:AB:4B:3B:DD:AD:38:2F:5E:1B:8C:BC:37:BD:C5:1B:60:8A:50:66:5A:A7:3C:97:2D:CB"
+      ]
+    }
+  }
+]
