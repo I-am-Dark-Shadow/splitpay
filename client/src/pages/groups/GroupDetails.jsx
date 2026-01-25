@@ -105,7 +105,7 @@ export default function GroupDetails() {
   if (!group) return <div className="p-10 text-center">Group not found</div>;
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24 pt-6 relative">
+    <div className="min-h-screen bg-slate-50 pb-24 pt-8 relative">
       {/* Top Bar */}
       <div className="sticky top-0 z-40 bg-slate-50/90 backdrop-blur border-b border-slate-200 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
