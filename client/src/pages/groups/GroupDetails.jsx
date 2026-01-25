@@ -4,8 +4,9 @@ import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import { formatCurrency, formatDate } from '../../utils/format';
 import { calculateSettlements } from '../../utils/settlementLogic';
-import { ArrowLeft, PlusCircle, Users, ArrowRight, UserPlus, X } from 'lucide-react';
+import { ArrowLeft, PlusCircle, Users, ArrowRight, UserPlus, X, Share2 } from 'lucide-react'; // ✅ Share2 icon added
 import toast from 'react-hot-toast';
+import { Share } from '@capacitor/share'; // ✅ Capacitor Share Plugin
 
 export default function GroupDetails() {
   const { id } = useParams();
@@ -22,7 +23,7 @@ export default function GroupDetails() {
   // Balances
   const [totalSpent, setTotalSpent] = useState(0);
   const [myDebts, setMyDebts] = useState({ owe: [], owed: [] });
-  // ✅ New State: Check if group is fully settled
+  // Check if group is fully settled
   const [isGlobalSettled, setIsGlobalSettled] = useState(false);
 
   useEffect(() => {
@@ -61,6 +62,30 @@ export default function GroupDetails() {
     }
   };
 
+  // ✅ Share Function Implementation
+  const handleShareInvite = async () => {
+    // আপনার লাইভ ডোমেইন লিংক এখানে ব্যবহার করা হয়েছে
+    const inviteLink = `https://splitpay-pro.vercel.app/join/${id}`;
+    
+    try {
+      await Share.share({
+        title: `Join ${group.name} on SplitPay`,
+        text: `Hey! Join our expense group "${group.name}" on SplitPay using this link:`,
+        url: inviteLink,
+        dialogTitle: 'Invite Friends',
+      });
+    } catch (error) {
+      // যদি ইউজার শেয়ার ক্যান্সেল করে বা ওয়েবে থাকে
+      console.log('Share error or dismissed', error);
+      try {
+        await navigator.clipboard.writeText(inviteLink);
+        toast.success('Invite link copied to clipboard!');
+      } catch (err) {
+        toast.error('Could not copy link');
+      }
+    }
+  };
+
   const calculateStats = (groupData) => {
     if (!groupData.expenses) return;
 
@@ -73,8 +98,7 @@ export default function GroupDetails() {
     const owedToMe = settlements.filter(s => s.to === user._id);
     setMyDebts({ owe: iOwe, owed: owedToMe });
 
-    // ✅ Logic to disable buttons: 
-    // If expenses exist (>0) AND settlements are empty (0), it means fully settled.
+    // Logic to disable buttons if settled
     if (groupData.expenses.length > 0 && settlements.length === 0) {
       setIsGlobalSettled(true);
     } else {
@@ -119,7 +143,21 @@ export default function GroupDetails() {
         </div>
         
         <div className="flex items-center gap-2">
-          {/* ✅ Add Member Button: Disabled if settled */}
+          
+          {/* ✅ Share Invite Button */}
+          <button 
+            onClick={handleShareInvite}
+            disabled={isGlobalSettled}
+            className={`h-9 w-9 rounded-xl flex items-center justify-center transition-all ${
+              isGlobalSettled
+              ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+              : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
+            }`}
+          >
+            <Share2 size={18} />
+          </button>
+
+          {/* Add Member Button */}
           <button 
             onClick={() => setShowAddMember(true)}
             disabled={isGlobalSettled}
@@ -132,7 +170,7 @@ export default function GroupDetails() {
             <UserPlus size={18} />
           </button>
 
-          {/* ✅ Add Expense Button: Disabled if settled */}
+          {/* Add Expense Button */}
           {isGlobalSettled ? (
             <button
               disabled

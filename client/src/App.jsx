@@ -19,6 +19,7 @@ const Profile = lazy(() => import('./pages/dashboard/Profile'));
 const Report = lazy(() => import('./pages/dashboard/Report'));
 const ToPay = lazy(() => import('./pages/dashboard/ToPay'));
 const ToReceive = lazy(() => import('./pages/dashboard/ToReceive'));
+const JoinGroup = lazy(() => import('./pages/groups/JoinGroup'));
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -53,7 +54,7 @@ function AppRoutes() {
           {/* Other Tabs */}
           <Route path="/report" element={<Report />} />
           <Route path="/profile" element={<Profile />} />
-          
+          <Route path="/join/:groupId" element={<JoinGroup />} />
         </Route>
       </Routes>
     </Suspense>

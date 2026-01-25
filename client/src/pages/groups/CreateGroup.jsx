@@ -41,14 +41,16 @@ export default function CreateGroup() {
 
   const handleSubmit = async () => {
     if (!name.trim()) return toast.error('Group name is required');
-    if (members.length === 0) return toast.error('Add at least one member');
+    
+    // ❌ REMOVED: Member check validation removed
+    // if (members.length === 0) return toast.error('Add at least one member');
 
     setLoading(true);
     try {
       // API Call
       await api.post('/groups', {
         name,
-        members // Backend expects array of emails
+        members // Backend expects array of emails (can be empty now)
       });
 
       toast.success('Group created successfully!');
@@ -77,7 +79,7 @@ export default function CreateGroup() {
       <div className="px-4 pt-6 pb-24">
         <div className="mb-4">
           <h1 className="text-2xl font-semibold tracking-tight text-slate-900">New Group</h1>
-          <p className="text-sm text-slate-600 mt-1">Add members by email. You can adjust later.</p>
+          <p className="text-sm text-slate-600 mt-1">Add members now or invite them later.</p>
         </div>
 
         <div className="bg-white border border-slate-200 rounded-3xl shadow-sm p-4 space-y-4">
@@ -86,7 +88,7 @@ export default function CreateGroup() {
             <label className="block text-xs font-semibold text-slate-700 mb-2">Group Name</label>
             <Input 
               icon={Hash} 
-              placeholder="Darjing Trip 2026" 
+              placeholder="Darjeeling Trip 2026" 
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
@@ -95,7 +97,7 @@ export default function CreateGroup() {
           {/* Add Member Section */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="block text-xs font-semibold text-slate-700">Add Members</label>
+              <label className="block text-xs font-semibold text-slate-700">Add Members (Optional)</label>
               <span className="text-xs text-slate-500">Email + Add</span>
             </div>
             
@@ -123,7 +125,9 @@ export default function CreateGroup() {
             <div className="text-xs font-semibold text-slate-700 mb-2">Members ({members.length})</div>
             
             {members.length === 0 ? (
-              <div className="text-xs text-slate-500 italic">No members added yet. You are included automatically.</div>
+              <div className="text-xs text-slate-500 italic bg-slate-50 p-3 rounded-xl border border-dashed border-slate-300">
+                No extra members added. You can add them later.
+              </div>
             ) : (
               <div className="flex flex-wrap gap-2">
                 {members.map((email) => (
