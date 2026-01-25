@@ -99,7 +99,7 @@ export default function Login() {
 
           {/* Download Button */}
           <a 
-            href="/splitpay.apk" // 👈 Public folder থেকে ডাউনলোড হবে
+            href="/SplitPay.apk" // 👈 Public folder থেকে ডাউনলোড হবে
             download="SplitPay.apk"
             className="relative z-10 h-10 px-4 bg-emerald-500 hover:bg-emerald-400 text-white rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-lg shadow-emerald-500/30 active:scale-95"
           >
