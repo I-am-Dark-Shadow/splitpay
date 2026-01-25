@@ -148,7 +148,7 @@ export default function GroupDetails() {
           <button 
             onClick={handleShareInvite}
             disabled={isGlobalSettled}
-            className={`h-9 w-9 rounded-xl flex items-center justify-center transition-all ${
+            className={`h-9 w-9 rounded-xl flex items-center justify-center transition-all border border-emerald-600 ${
               isGlobalSettled
               ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
               : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'

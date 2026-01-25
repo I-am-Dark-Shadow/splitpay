@@ -1,3 +1,6 @@
+import { App as CapApp } from '@capacitor/app';
+import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
@@ -28,29 +31,42 @@ const PrivateRoute = ({ children }) => {
 };
 
 function AppRoutes() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    CapApp.addListener('appUrlOpen', ({ url }) => {
+      if (!url) return;
+
+      const parsedUrl = new URL(url);
+      const path = parsedUrl.pathname;
+
+      navigate(path);
+    });
+  }, []);
+
   return (
     // Suspense: পেজ লোড হওয়ার মাঝখানের সময়ে LoadingScreen দেখাবে
     <Suspense fallback={<LoadingScreen />}>
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        
+
         {/* Protected Layout Routes */}
         <Route element={<PrivateRoute><AppLayout /></PrivateRoute>}>
           <Route path="/" element={<Home />} />
           <Route path="/to-pay" element={<ToPay />} />
           <Route path="/to-receive" element={<ToReceive />} />
-          
+
           {/* Groups */}
           <Route path="/groups" element={<Groups />} />
           <Route path="/groups/create" element={<CreateGroup />} />
           <Route path="/groups/:id" element={<GroupDetails />} />
-          
+
           {/* Expenses */}
           <Route path="/add-expense" element={<AddExpense />} />
           <Route path="/groups/:id/add-expense" element={<AddExpense />} />
           <Route path="/groups/:id/settlement" element={<Settlement />} />
-          
+
           {/* Other Tabs */}
           <Route path="/report" element={<Report />} />
           <Route path="/profile" element={<Profile />} />
@@ -63,37 +79,37 @@ function AppRoutes() {
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/">
       <AuthProvider>
         <GroupProvider>
           <AppRoutes />
-          
+
           {/* TOAST CONFIGURATION */}
-          <Toaster 
-            position="top-center" 
+          <Toaster
+            position="top-center"
             toastOptions={{
-              style: { 
-                background: '#0f172a', 
-                color: '#fff', 
+              style: {
+                background: '#0f172a',
+                color: '#fff',
                 borderRadius: '16px',
                 fontSize: '14px',
                 padding: '12px 20px',
               },
               success: {
                 iconTheme: {
-                  primary: '#10b981', 
+                  primary: '#10b981',
                   secondary: '#fff',
                 },
               },
               error: {
                 iconTheme: {
-                  primary: '#ef4444', 
+                  primary: '#ef4444',
                   secondary: '#fff',
                 },
               },
             }}
           />
-          
+
         </GroupProvider>
       </AuthProvider>
     </BrowserRouter>
