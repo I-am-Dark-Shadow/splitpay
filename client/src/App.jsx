@@ -23,6 +23,8 @@ const Report = lazy(() => import('./pages/dashboard/Report'));
 const ToPay = lazy(() => import('./pages/dashboard/ToPay'));
 const ToReceive = lazy(() => import('./pages/dashboard/ToReceive'));
 const JoinGroup = lazy(() => import('./pages/groups/JoinGroup'));
+const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword'));
+const UserGroupExpenses = lazy(() => import('./pages/expenses/UserGroupExpenses'));
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -71,6 +73,8 @@ function AppRoutes() {
           <Route path="/report" element={<Report />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/join/:groupId" element={<JoinGroup />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/groups/:id/my-expenses" element={<UserGroupExpenses />} />
         </Route>
       </Routes>
     </Suspense>

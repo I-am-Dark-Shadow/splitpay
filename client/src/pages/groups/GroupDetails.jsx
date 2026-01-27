@@ -4,9 +4,10 @@ import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import { formatCurrency, formatDate } from '../../utils/format';
 import { calculateSettlements } from '../../utils/settlementLogic';
-import { ArrowLeft, PlusCircle, Users, ArrowRight, UserPlus, X, Share2 } from 'lucide-react'; // ✅ Share2 icon added
+import { ArrowLeft, PlusCircle, Users, ArrowRight, UserPlus, X, Share2, ListFilter, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { Share } from '@capacitor/share'; // ✅ Capacitor Share Plugin
+import { Share } from '@capacitor/share';
+import { Capacitor } from '@capacitor/core';
 
 export default function GroupDetails() {
   const { id } = useParams();
@@ -14,17 +15,20 @@ export default function GroupDetails() {
   const navigate = useNavigate();
   const [group, setGroup] = useState(null);
   const [loading, setLoading] = useState(true);
-  
+
   // Add Member State
   const [showAddMember, setShowAddMember] = useState(false);
   const [newMemberEmail, setNewMemberEmail] = useState('');
   const [addingMember, setAddingMember] = useState(false);
-  
+
   // Balances
   const [totalSpent, setTotalSpent] = useState(0);
   const [myDebts, setMyDebts] = useState({ owe: [], owed: [] });
   // Check if group is fully settled
   const [isGlobalSettled, setIsGlobalSettled] = useState(false);
+
+  // Admin Check
+  const isAdmin = group?.admin === user?._id || group?.creator === user?._id;
 
   useEffect(() => {
     fetchGroupDetails();
@@ -45,7 +49,7 @@ export default function GroupDetails() {
 
   const handleAddMember = async () => {
     if (!newMemberEmail) return toast.error('Please enter an email');
-    
+
     setAddingMember(true);
     try {
       const { data } = await api.put(`/groups/${id}/members`, { email: newMemberEmail });
@@ -64,25 +68,37 @@ export default function GroupDetails() {
 
   // ✅ Share Function Implementation
   const handleShareInvite = async () => {
-    // আপনার লাইভ ডোমেইন লিংক এখানে ব্যবহার করা হয়েছে
     const inviteLink = `https://splitpay-pro.vercel.app/join/${id}`;
-    
+
     try {
-      await Share.share({
-        title: `Join ${group.name} on SplitPay`,
-        text: `Hey! Join our expense group "${group.name}" on SplitPay using this link:`,
-        url: inviteLink,
-        dialogTitle: 'Invite Friends',
-      });
-    } catch (error) {
-      // যদি ইউজার শেয়ার ক্যান্সেল করে বা ওয়েবে থাকে
-      console.log('Share error or dismissed', error);
-      try {
+      if (Capacitor.isNativePlatform()) {
+        await Share.share({
+          title: `Join ${group.name} on SplitPay`,
+          text: `Hey! Join our expense group "${group.name}" on SplitPay using this link:`,
+          url: inviteLink,
+          dialogTitle: 'Invite Friends',
+        });
+      } else {
+        // Web Fallback
         await navigator.clipboard.writeText(inviteLink);
         toast.success('Invite link copied to clipboard!');
-      } catch (err) {
-        toast.error('Could not copy link');
       }
+    } catch (error) {
+      console.log('Share error', error);
+    }
+  };
+
+  // ✅ Delete Group Function (Admin Only)
+  const handleDeleteGroup = async () => {
+    if (!window.confirm("Are you sure? This will delete the group and ALL expenses permanently!")) return;
+
+    try {
+      await api.delete(`/groups/${id}`);
+      toast.success('Group deleted successfully');
+      navigate('/');
+    } catch (error) {
+      console.error(error);
+      toast.error(error.response?.data?.message || 'Failed to delete group');
     }
   };
 
@@ -115,7 +131,7 @@ export default function GroupDetails() {
     if (!group) return [];
     const spending = {};
     group.members.forEach(m => spending[m._id] = { name: m.name, amount: 0 });
-    
+
     group.expenses.forEach(exp => {
       const payerId = exp.paidBy?._id || exp.paidBy;
       if (spending[payerId]) {
@@ -141,31 +157,28 @@ export default function GroupDetails() {
             <div className="text-xs text-slate-500">{group.members.length} members</div>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-2">
-          
-          {/* ✅ Share Invite Button */}
-          <button 
+          {/* Share Button */}
+          <button
             onClick={handleShareInvite}
             disabled={isGlobalSettled}
-            className={`h-9 w-9 rounded-xl flex items-center justify-center transition-all border border-emerald-600 ${
-              isGlobalSettled
-              ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
-              : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
-            }`}
+            className={`h-9 w-9 rounded-xl flex items-center justify-center transition-all border border-emerald-600 ${isGlobalSettled
+                ? 'bg-slate-200 text-slate-400 border-none cursor-not-allowed'
+                : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
+              }`}
           >
             <Share2 size={18} />
           </button>
 
           {/* Add Member Button */}
-          <button 
+          <button
             onClick={() => setShowAddMember(true)}
             disabled={isGlobalSettled}
-            className={`h-9 w-9 rounded-xl mx-1 flex items-center justify-center transition-all ${
-              isGlobalSettled 
-                ? 'bg-slate-200 text-slate-400 cursor-not-allowed' 
+            className={`h-9 w-9 rounded-xl mx-1 flex items-center justify-center transition-all ${isGlobalSettled
+                ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
                 : 'bg-slate-900 text-white hover:bg-slate-700'
-            }`}
+              }`}
           >
             <UserPlus size={18} />
           </button>
@@ -176,10 +189,10 @@ export default function GroupDetails() {
               disabled
               className="h-9 px-3 rounded-xl bg-slate-200 text-slate-400 text-xs font-semibold flex items-center gap-1 cursor-not-allowed"
             >
-               <PlusCircle size={16} /> Add
+              <PlusCircle size={16} /> Add
             </button>
           ) : (
-            <Link 
+            <Link
               to={`/groups/${id}/add-expense`}
               className="h-9 px-3 rounded-xl bg-slate-900 text-white text-xs font-semibold flex items-center gap-1 hover:bg-slate-700"
             >
@@ -190,12 +203,12 @@ export default function GroupDetails() {
       </div>
 
       <div className="px-4 pt-5 space-y-4">
-        
+
         {/* 1. Balances Section */}
         {(myDebts.owe.length > 0 || myDebts.owed.length > 0) ? (
           <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-4">
             <div className="text-sm font-bold text-slate-900">Your Balances</div>
-            
+
             <div className="space-y-2">
               {myDebts.owe.map((item, idx) => (
                 <div key={idx} className="flex justify-between items-center text-sm p-3 bg-rose-50 rounded-2xl border border-rose-100">
@@ -212,38 +225,71 @@ export default function GroupDetails() {
               ))}
             </div>
 
-            <Link 
-              to={`/groups/${id}/settlement`} 
+            {/* View Settlement Button */}
+            <Link
+              to={`/groups/${id}/settlement`}
               className="flex items-center justify-center w-full py-3 rounded-xl bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800 active:scale-[0.98] transition-all shadow-md shadow-slate-900/10"
             >
               View full settlement plan <ArrowRight size={16} className="ml-2" />
+            </Link>
+
+            {/* ✅ NEW: Manage My Expenses Button (Violet Color) */}
+            <Link
+              to={`/groups/${id}/my-expenses`}
+              className="flex items-center justify-center w-full py-3 rounded-xl bg-violet-600 text-white text-sm font-semibold hover:bg-violet-700 active:scale-[0.98] transition-all shadow-md shadow-violet-600/10"
+            >
+              <ListFilter size={16} className="mr-2" /> Edit / Delete My Expenses
             </Link>
           </div>
         ) : (
           <div className="bg-emerald-50 border border-emerald-100 rounded-3xl p-4 text-center text-sm text-emerald-700 font-medium">
             Everything is settled up here!
+            {/* Even if settled, allow user to see/edit their past expenses */}
+            <div className="mt-3">
+              <Link
+                to={`/groups/${id}/my-expenses`}
+                className="text-emerald-700 underline text-xs font-bold"
+              >
+                View History
+              </Link>
+            </div>
           </div>
         )}
 
         {/* 2. Total Spending */}
         <div className="bg-white border border-slate-200 rounded-3xl shadow-sm p-4">
-           <div className="text-sm font-bold mb-3 flex items-center gap-2">
-             <Users size={16} /> Total Spending ({formatCurrency(totalSpent)})
-           </div>
-           <div className="space-y-2">
-             {getMemberSpending().map((stat, idx) => (
-               <div key={idx} className="flex justify-between items-center text-sm">
-                 <span className="text-slate-600">{stat.name}</span>
-                 <span className="font-semibold text-slate-900">{formatCurrency(stat.amount)}</span>
-               </div>
-             ))}
-           </div>
+          <div className="text-sm font-bold mb-3 flex items-center gap-2">
+            <Users size={16} /> Total Spending ({formatCurrency(totalSpent)})
+          </div>
+          <div className="space-y-2">
+            {getMemberSpending().map((stat, idx) => (
+              <div key={idx} className="flex justify-between items-center text-sm">
+                <span className="text-slate-600">{stat.name}</span>
+                <span className="font-semibold text-slate-900">{formatCurrency(stat.amount)}</span>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* 3. Recent Expenses */}
+        {/* 3. Admin Zone (Only for Admin) */}
+        {isAdmin && (
+          <div className="bg-rose-50 border border-rose-100 rounded-3xl p-4">
+            <h3 className="text-xs font-bold text-rose-700 uppercase mb-2 tracking-wide flex items-center gap-1">
+              Admin Zone
+            </h3>
+            <button
+              onClick={handleDeleteGroup}
+              className="w-full py-3 rounded-xl bg-white border border-rose-200 text-rose-600 font-semibold text-sm flex items-center justify-center gap-2 hover:bg-rose-100 transition-colors"
+            >
+              <Trash2 size={16} /> Delete Group Permanently
+            </button>
+          </div>
+        )}
+
+        {/* 4. Recent Expenses */}
         <div>
           <div className="text-sm font-bold text-slate-900 mb-2 px-1">Recent Expenses</div>
-          
+
           {group.expenses.length === 0 ? (
             <div className="text-center p-6 text-slate-400 text-sm">No expenses yet.</div>
           ) : (
@@ -279,7 +325,7 @@ export default function GroupDetails() {
                 <X size={18} />
               </button>
             </div>
-            
+
             <p className="text-sm text-slate-500 mb-4">
               Enter the email address of the person you want to add to <b>{group.name}</b>.
             </p>
@@ -287,8 +333,8 @@ export default function GroupDetails() {
             <div className="space-y-4">
               <div>
                 <label className="text-xs font-semibold text-slate-700 block mb-2">Email Address</label>
-                <input 
-                  type="email" 
+                <input
+                  type="email"
                   value={newMemberEmail}
                   onChange={(e) => setNewMemberEmail(e.target.value)}
                   placeholder="friend@example.com"
@@ -296,7 +342,7 @@ export default function GroupDetails() {
                 />
               </div>
 
-              <button 
+              <button
                 onClick={handleAddMember}
                 disabled={addingMember}
                 className="w-full py-3 rounded-xl bg-slate-900 text-white font-semibold text-sm hover:bg-slate-800 disabled:opacity-70"

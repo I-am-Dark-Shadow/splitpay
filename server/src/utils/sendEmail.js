@@ -1,27 +1,22 @@
 import nodemailer from 'nodemailer';
 
-const sendEmail = async (to, subject, htmlContent) => {
-  try {
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
+export const sendEmail = async (options) => {
+  const transporter = nodemailer.createTransport({
+    host: process.env.EMAIL_HOST,
+    port: process.env.EMAIL_PORT,
+    secure: false, // true for 465, false for other ports
+    auth: {
+      user: process.env.EMAIL_USER, // ✅ .env থেকে আসবে
+      pass: process.env.EMAIL_PASS  // ✅ .env থেকে আসবে
+    }
+  });
 
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to,
-      subject,
-      html: htmlContent,
-    };
+  const message = {
+    from: `"SplitPay Security" <${process.env.EMAIL_USER}>`,
+    to: options.email,
+    subject: options.subject,
+    html: options.html
+  };
 
-    await transporter.sendMail(mailOptions);
-    console.log(`Email sent to ${to}`);
-  } catch (error) {
-    console.error(`Error sending email: ${error.message}`);
-  }
+  await transporter.sendMail(message);
 };
-
-export default sendEmail;

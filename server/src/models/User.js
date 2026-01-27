@@ -5,6 +5,11 @@ const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
+  
+  // ✅ Forgot Password এর জন্য নতুন ফিল্ড
+  resetPasswordOtp: { type: String },
+  resetPasswordExpire: { type: Date }
+
 }, { timestamps: true });
 
 // Encrypt password before saving
