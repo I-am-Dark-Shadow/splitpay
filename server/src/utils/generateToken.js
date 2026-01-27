@@ -13,7 +13,7 @@ const generateToken = (res, userId) => {
   res.cookie('jwt', token, {
     httpOnly: true,
     // লোকালে secure: false হতে হবে, লাইভে true
-    secure: isProduction, 
+    secure: true, 
     // লোকালে sameSite: 'lax' ভালো কাজ করে, লাইভে 'none'
     sameSite: isProduction ? 'none' : 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000
