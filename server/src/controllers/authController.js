@@ -4,6 +4,7 @@ import { sendEmail } from '../utils/sendEmail.js';
 
 /* ================= REGISTER ================= */
 export const registerUser = async (req, res) => {
+  console.log('REGISTER BODY 👉', req.body);
   try {
     const { name, email, password } = req.body;
 
