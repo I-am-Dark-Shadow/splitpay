@@ -7,10 +7,15 @@ const generateToken = (res, userId) => {
     { expiresIn: '7d' }
   );
 
+  // Check if we are in production (Vercel)
+  const isProduction = process.env.NODE_ENV === 'production';
+
   res.cookie('jwt', token, {
     httpOnly: true,
-    secure: true,        // 🔥 Vercel (HTTPS)
-    sameSite: 'none',    // 🔥 cross-domain
+    // লোকালে secure: false হতে হবে, লাইভে true
+    secure: isProduction, 
+    // লোকালে sameSite: 'lax' ভালো কাজ করে, লাইভে 'none'
+    sameSite: isProduction ? 'none' : 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000
   });
 };

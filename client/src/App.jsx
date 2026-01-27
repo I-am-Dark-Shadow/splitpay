@@ -52,6 +52,7 @@ function AppRoutes() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
 
         {/* Protected Layout Routes */}
         <Route element={<PrivateRoute><AppLayout /></PrivateRoute>}>
@@ -73,7 +74,6 @@ function AppRoutes() {
           <Route path="/report" element={<Report />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/join/:groupId" element={<JoinGroup />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/groups/:id/my-expenses" element={<UserGroupExpenses />} />
         </Route>
       </Routes>
