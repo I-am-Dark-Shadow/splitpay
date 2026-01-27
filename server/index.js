@@ -14,8 +14,26 @@ connectDB();
 const app = express();
 
 app.use(cors({
-  origin: process.env.CLIENT_URL,
-  credentials: true,
+  origin: function (origin, callback) {
+    // ১. যদি কোনো origin না থাকে (যেমন Mobile App বা Postman), তাহলে Allow করুন
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    // ২. আপনার অনুমোদিত ডোমেইনগুলোর লিস্ট
+    const allowedOrigins = [
+      process.env.CLIENT_URL,      
+      'http://localhost:5173',   
+    ];
+
+    
+    if (allowedOrigins.indexOf(origin) !== -1 || true) { 
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true, 
   methods: ['GET','POST','PUT','DELETE','OPTIONS'],
   allowedHeaders: ['Content-Type','Authorization'],
 }));
