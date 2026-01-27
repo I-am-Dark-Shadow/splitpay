@@ -15,7 +15,7 @@ const generateToken = (res, userId) => {
     // লোকালে secure: false হতে হবে, লাইভে true
     secure: true, 
     // লোকালে sameSite: 'lax' ভালো কাজ করে, লাইভে 'none'
-    sameSite: isProduction ? 'none' : 'lax',
+    sameSite: 'none',
     maxAge: 7 * 24 * 60 * 60 * 1000
   });
 };
