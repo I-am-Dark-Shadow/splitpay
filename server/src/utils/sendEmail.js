@@ -1,22 +1,23 @@
 import nodemailer from 'nodemailer';
 
-export const sendEmail = async (options) => {
+export const sendEmail = async ({ email, subject, html }) => {
   const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST,
     port: process.env.EMAIL_PORT,
-    secure: false, // true for 465, false for other ports
+    secure: false,
     auth: {
-      user: process.env.EMAIL_USER, // ✅ .env থেকে আসবে
-      pass: process.env.EMAIL_PASS  // ✅ .env থেকে আসবে
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+    tls: {
+      rejectUnauthorized: false // ✅ Vercel fix
     }
   });
 
-  const message = {
+  await transporter.sendMail({
     from: `"SplitPay Security" <${process.env.EMAIL_USER}>`,
-    to: options.email,
-    subject: options.subject,
-    html: options.html
-  };
-
-  await transporter.sendMail(message);
+    to: email,
+    subject,
+    html
+  });
 };

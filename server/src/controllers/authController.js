@@ -72,23 +72,21 @@ export const getUserProfile = async (req, res) => {
 // @desc    Forgot Password - Send OTP
 // @route   POST /api/auth/forgot-password
 export const forgotPassword = async (req, res) => {
-  const { email } = req.body;
-  const user = await User.findOne({ email });
+  try {
+    const { email } = req.body;
 
-  if (!user) {
-    return res.status(404).json({ message: 'Email not found' });
-  }
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'Email not found' });
+    }
 
-  // Generate 4 Digit OTP
-  const otp = Math.floor(1000 + Math.random() * 9000).toString();
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
 
-  // Save OTP to user DB (Temporary) - In production use Redis or dedicated field with expiry
-  user.resetPasswordOtp = otp;
-  user.resetPasswordExpire = Date.now() + 10 * 60 * 1000; // 10 Minutes
-  await user.save();
+    user.resetPasswordOtp = otp;
+    user.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
+    await user.save();
 
-  // HTML Template
-  const message = `
+    const message = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -193,46 +191,45 @@ export const forgotPassword = async (req, res) => {
 </body>
 </html>
 `;
-
-
-  try {
     await sendEmail({
       email: user.email,
       subject: 'SplitPay Password Reset OTP',
       html: message
     });
+
     res.status(200).json({ message: 'OTP sent to email' });
+
   } catch (error) {
-    console.error("Email Sending Error:", error);
-    user.resetPasswordOtp = undefined;
-    user.resetPasswordExpire = undefined;
-    await user.save();
+    console.error('FORGOT PASSWORD ERROR 👉', error);
     res.status(500).json({ message: 'Email could not be sent' });
   }
 };
 
-// @desc    Reset Password
-// @route   POST /api/auth/reset-password
+/* ================= RESET PASSWORD ================= */
 export const resetPassword = async (req, res) => {
-  const { email, otp, newPassword } = req.body;
+  try {
+    const { email, otp, newPassword } = req.body;
 
-  const user = await User.findOne({
-    email,
-    resetPasswordOtp: otp,
-    resetPasswordExpire: { $gt: Date.now() }
-  });
+    const user = await User.findOne({
+      email,
+      resetPasswordOtp: otp,
+      resetPasswordExpire: { $gt: Date.now() }
+    });
 
-  if (!user) {
-    return res.status(400).json({ message: 'Invalid or expired OTP' });
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid or expired OTP' });
+    }
+
+    user.password = newPassword;
+    user.resetPasswordOtp = undefined;
+    user.resetPasswordExpire = undefined;
+
+    await user.save();
+
+    res.status(200).json({ message: 'Password reset successful' });
+
+  } catch (error) {
+    console.error('RESET PASSWORD ERROR 👉', error);
+    res.status(500).json({ message: 'Server error' });
   }
-
-  // Hash new password
-  const salt = await bcrypt.genSalt(10);
-  user.password = await bcrypt.hash(newPassword, salt);
-
-  user.resetPasswordOtp = undefined;
-  user.resetPasswordExpire = undefined;
-  await user.save();
-
-  res.status(200).json({ message: 'Password updated successfully' });
 };
