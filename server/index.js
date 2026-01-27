@@ -13,20 +13,15 @@ connectDB();
 
 const app = express();
 
-// ✅ Universal CORS Configuration (Web + Mobile Fix)
+/* =======================
+   🔥 FINAL CORS CONFIG
+   Web + Mobile + APK Safe
+======================= */
 app.use(cors({
-  origin: (origin, callback) => {
-    // ১. মোবাইল অ্যাপ বা পোস্টম্যান থেকে আসলে 'origin' থাকে না, তাই Allow করুন
-    if (!origin) {
-      return callback(null, true);
-    }
-    // ২. ওয়েব থেকে আসলে যেই ডোমেইন থেকেই আসুক, Allow করুন (Reflect Origin)
-    return callback(null, true);
-  },
-  credentials: true, // কুকি পাস করার জন্য জরুরি
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  origin: true,        // 🔥 Reflects origin (vercel, https://localhost, etc.)
+  credentials: true,  // 🔥 Allow cookies
 }));
+
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -41,11 +36,20 @@ app.get('/', (req, res) => {
   res.send('SplitPay API is running...');
 });
 
-// Global Error Handler (যাতে সার্ভার ক্রাশ না করে এরর মেসেজ দেয়)
+// ❌ Not found handler
+app.use((req, res) => {
+  res.status(404).json({ message: 'Route not found' });
+});
+
+// 🔥 Global error handler
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: 'Internal Server Error', error: err.message });
+  console.error('SERVER ERROR 👉', err);
+  res.status(500).json({
+    message: 'Internal Server Error',
+  });
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
