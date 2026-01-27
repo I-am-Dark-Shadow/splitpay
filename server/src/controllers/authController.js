@@ -1,76 +1,98 @@
 import User from '../models/User.js';
 import generateToken from '../utils/generateToken.js';
 import { sendEmail } from '../utils/sendEmail.js';
-import bcrypt from 'bcryptjs';
 
-// @desc    Register new user
-// @route   POST /api/auth/register
+/* ================= REGISTER ================= */
 export const registerUser = async (req, res) => {
-  const { name, email, password } = req.body;
+  try {
+    const { name, email, password } = req.body;
 
-  const userExists = await User.findOne({ email });
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: 'All fields are required' });
+    }
 
-  if (userExists) {
-    res.status(400).json({ message: 'User already exists' });
-    return;
-  }
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      return res.status(400).json({ message: 'User already exists' });
+    }
 
-  const user = await User.create({ name, email, password });
+    const user = await User.create({ name, email, password });
 
-  if (user) {
     generateToken(res, user._id);
+
     res.status(201).json({
       _id: user._id,
       name: user.name,
       email: user.email,
     });
-  } else {
-    res.status(400).json({ message: 'Invalid user data' });
+
+  } catch (error) {
+    console.error('REGISTER ERROR 👉', error);
+    res.status(500).json({ message: 'Register failed' });
   }
 };
 
-// @desc    Auth user & get token
-// @route   POST /api/auth/login
+/* ================= LOGIN ================= */
 export const loginUser = async (req, res) => {
-  const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
 
-  const user = await User.findOne({ email });
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
 
-  if (user && (await user.matchPassword(password))) {
+    const isMatch = await user.matchPassword(password);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
     generateToken(res, user._id);
-    res.json({
+
+    res.status(200).json({
       _id: user._id,
       name: user.name,
       email: user.email,
     });
-  } else {
-    res.status(401).json({ message: 'Invalid email or password' });
+
+  } catch (error) {
+    console.error('LOGIN ERROR 👉', error);
+    res.status(500).json({ message: 'Login failed' });
   }
 };
 
-// @desc    Logout user / clear cookie
-// @route   POST /api/auth/logout
+/* ================= LOGOUT ================= */
 export const logoutUser = (req, res) => {
   res.cookie('jwt', '', {
     httpOnly: true,
     expires: new Date(0),
+    secure: true,
+    sameSite: 'none'
   });
+
   res.status(200).json({ message: 'Logged out successfully' });
 };
 
-// @desc    Get user profile
-// @route   GET /api/auth/profile
+/* ================= PROFILE ================= */
 export const getUserProfile = async (req, res) => {
-  const user = {
-    _id: req.user._id,
-    name: req.user.name,
-    email: req.user.email,
-  };
-  res.status(200).json(user);
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Not authorized' });
+    }
+
+    res.status(200).json({
+      _id: req.user._id,
+      name: req.user.name,
+      email: req.user.email,
+    });
+
+  } catch (error) {
+    console.error('PROFILE ERROR 👉', error);
+    res.status(500).json({ message: 'Server error' });
+  }
 };
 
-// @desc    Forgot Password - Send OTP
-// @route   POST /api/auth/forgot-password
+/* ================= FORGOT PASSWORD ================= */
 export const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
@@ -191,6 +213,7 @@ export const forgotPassword = async (req, res) => {
 </body>
 </html>
 `;
+
     await sendEmail({
       email: user.email,
       subject: 'SplitPay Password Reset OTP',
