@@ -59,12 +59,13 @@ export default function Home() {
     return <LoadingScreen />;
   }
 
+  
   return (
     <div className="px-4 pt-5 pb-24">
       {/* 1. Header (Original Design) */}
       <div className="flex items-start justify-between gap-3 mb-6 pt-4">
         <div className="flex flex-col">
-          <img src="/name.png" alt="" className="w-28 mx-[-6px]" />
+          <img src="/name.webp" alt="" className="w-28 mx-[-6px]" />
           <div className="text-sm text-slate-600">
             {user && user.name ? user.name.split(' ')[0] : 'Guest'}
           </div>
@@ -82,10 +83,10 @@ export default function Home() {
 
       {/* 2. Balance Cards (UPDATED WITH LINKS) */}
       <div className="grid grid-cols-2 gap-3 mb-6">
-        
+
         {/* Card 1: To Pay */}
-        <Link 
-          to="/to-pay" 
+        <Link
+          to="/to-pay"
           className="bg-white border border-slate-200 rounded-3xl hover:shadow-lg shadow-sm p-4 active:scale-95 transition-transform"
         >
           <div className="flex items-center justify-between">
@@ -101,7 +102,7 @@ export default function Home() {
         </Link>
 
         {/* Card 2: To Receive */}
-        <Link 
+        <Link
           to="/to-receive"
           className="bg-white border border-slate-200 rounded-3xl hover:shadow-lg shadow-sm p-4 active:scale-95 transition-transform"
         >
@@ -122,13 +123,21 @@ export default function Home() {
       <div className="bg-white border border-slate-200 rounded-3xl shadow-sm p-5 mb-6">
         <div className="text-sm font-bold text-slate-900 mb-4">Quick actions</div>
         <div className="grid grid-cols-2 gap-3">
-          <Link to="/groups/create" className="h-12 rounded-2xl bg-slate-900 text-white font-semibold text-sm hover:bg-slate-800 flex items-center justify-center gap-2 shadow-md shadow-slate-900/10">
-            <Users size={18} />
-            Create Group
+          <Link to="/groups/create" className="h-12 rounded-2xl bg-green-600 text-white font-semibold text-sm hover:bg-green-800 flex items-center justify-center gap-1 shadow-md shadow-slate-900/10">
+            <img
+              src="/addgroup.gif"
+              alt="Groups"
+              className="w-6 object-contain scale-[1.6]"
+            />
+            <p className="mt-1">Create Group</p>
           </Link>
-          <Link to="/add-expense" className="h-12 rounded-2xl border border-slate-200 text-slate-800 font-semibold text-sm hover:bg-slate-50 flex items-center justify-center gap-2">
-            <Receipt size={18} />
-            Add Expense
+          <Link to="/add-expense" className="h-12 rounded-2xl bg-red-600 text-white font-semibold text-sm hover:bg-red-700 flex items-center justify-center gap-1 shadow-md shadow-slate-900/10">
+            <img
+              src="/expence.gif"
+              alt="Expense"
+              className="w-6 object-contain scale-[1.2]"
+            />
+            <p className="mt-1">Add Expense</p>
           </Link>
         </div>
       </div>
@@ -153,14 +162,18 @@ export default function Home() {
               >
                 {/* Icon Box */}
                 <div className="flex justify-between items-start">
-                  <div className="h-10 w-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-700">
-                    <Folder size={20} />
+                  <div className="ml-[7px]">
+                    <img
+                      src="/fullgroup.gif"
+                      alt="Groups"
+                      className="w-6 object-contain scale-[1.9]"
+                    />
                   </div>
                 </div>
 
                 {/* Group Name & View Link */}
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900 truncate">{group.name}</h3>
+                  <h3 className="text-sm font-bold text-slate-900 truncate text-ellipsis line-clamp-1">{group.name}</h3>
                   <div className="flex items-center gap-1 text-xs text-slate-500 mt-1">
                     View Details <ArrowRight size={12} />
                   </div>
