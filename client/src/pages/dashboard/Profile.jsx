@@ -64,7 +64,7 @@ export default function Profile() {
       {/* Version Info */}
       <div className="mt-8 text-center">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-[10px] font-semibold text-slate-500">
-          <span>SplitPay v1.1.0</span>
+          <span>SplitPay v1.1.1</span>
           <span className="h-1 w-1 rounded-full bg-slate-400"></span>
           <span>Beta</span>
         </div>

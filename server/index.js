@@ -7,6 +7,7 @@ import connectDB from './src/config/db.js';
 import authRoutes from './src/routes/authRoutes.js';
 import groupRoutes from './src/routes/groupRoutes.js';
 import expenseRoutes from './src/routes/expenseRoutes.js';
+import manualReportRoutes from './src/routes/manualReportRoutes.js';
 
 dotenv.config();
 connectDB();
@@ -31,6 +32,7 @@ app.use(cookieParser());
 app.use('/api/auth', authRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/expenses', expenseRoutes);
+app.use('/api/manual-reports', manualReportRoutes);
 
 app.get('/', (req, res) => {
   res.send('SplitPay API is running...');

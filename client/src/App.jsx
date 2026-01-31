@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { GroupProvider } from './context/GroupContext';
 import AppLayout from './components/layout/AppLayout';
 import LoadingScreen from './components/ui/LoadingScreen'; // আপনার তৈরি করা লোডিং স্ক্রিন
+import Calculator from './pages/Calculator';
 
 // --- LAZY IMPORTS (Code Splitting) ---
 const Login = lazy(() => import('./pages/auth/Login'));
@@ -25,6 +26,7 @@ const ToReceive = lazy(() => import('./pages/dashboard/ToReceive'));
 const JoinGroup = lazy(() => import('./pages/groups/JoinGroup'));
 const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword'));
 const UserGroupExpenses = lazy(() => import('./pages/expenses/UserGroupExpenses'));
+
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -53,6 +55,8 @@ function AppRoutes() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+
+        <Route path="/calculator" element={<Calculator />} />
 
         {/* Protected Layout Routes */}
         <Route element={<PrivateRoute><AppLayout /></PrivateRoute>}>

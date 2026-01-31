@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
-import { Mail, Lock, Eye, EyeOff, ArrowRight, Smartphone, Download } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, Smartphone, Download, Calculator } from 'lucide-react';
 
 export default function Login() {
   const [showPass, setShowPass] = useState(false);
@@ -25,7 +25,7 @@ export default function Login() {
         <p className="text-sm text-slate-600 mt-1">Log in to manage groups.</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-white border border-slate-200 rounded-3xl shadow-sm p-5 space-y-4 relative z-10">
+      <form onSubmit={handleSubmit} className="bg-white border border-slate-200 rounded-2xl shadow-sm p-5 space-y-4 relative z-10">
         <div>
           <label className="block text-xs font-semibold text-slate-700 mb-2">Email</label>
           <Input icon={Mail} type="email" placeholder="example@gmail.com" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} required />
@@ -44,46 +44,35 @@ export default function Login() {
         <Button type="submit" className="mt-4 w-full shadow-lg">Log in <ArrowRight size={18} /></Button>
 
         <div className="flex justify-between items-center text-sm mt-4 pt-2 border-t border-slate-100">
-          {/* ✅ LINK TO FORGOT PASSWORD */}
           <Link to="/forgot-password" className="font-semibold text-slate-500 hover:text-slate-800">Forgot password?</Link>
           <Link to="/register" className="font-bold text-slate-900 hover:underline">Register</Link>
         </div>
       </form>
 
-      {/* ✅ PROFESSIONAL DOWNLOAD CARD */}
+      {/* ✅ Quick Calculator Button */}
+      <Link to="/calculator" className="mt-6 flex items-center justify-center gap-2 w-full py-3 bg-white border border-slate-300 rounded-2xl text-slate-700 font-bold text-sm shadow-sm hover:bg-slate-50 transition-all">
+        <img src="/calculator.gif" alt="Calculator" className="w-6 object-contain scale-[1.2]" />
+        Use Quick Calculator (No Login)
+      </Link>
+
+      {/* Download App Card */}
       <div className="mt-8 relative">
-        {/* Decorative Blur behind the card */}
         <div className="absolute inset-0 bg-emerald-500/20 blur-2xl rounded-full transform translate-y-4"></div>
-
         <div className="relative bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-5 shadow-xl flex items-center justify-between overflow-hidden border border-slate-700/50">
-
-          {/* Background Patterns */}
           <div className="absolute top-0 right-0 -mr-8 -mt-8 w-24 h-24 bg-white/5 rounded-full blur-xl"></div>
           <div className="absolute bottom-0 left-0 -ml-8 -mb-8 w-20 h-20 bg-emerald-500/20 rounded-full blur-xl"></div>
-
           <div className="flex items-center gap-4 relative z-10">
-            {/* Icon Box */}
             <div className="h-12 w-12 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-md border border-white/10 shadow-inner">
               <Smartphone size={24} className="text-emerald-400" />
             </div>
-
-            {/* Text */}
             <div>
               <div className="text-white font-bold text-base">Get the App</div>
               <div className="text-slate-400 text-xs mt-0.5">Best experience on mobile</div>
             </div>
           </div>
-
-          {/* Download Button */}
-          <a
-            href="/splitpay.apk"
-            download="SplitPay.apk"
-            className="relative z-10 h-10 px-4 bg-emerald-500 hover:bg-emerald-400 text-white rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-lg shadow-emerald-500/30 active:scale-95"
-          >
-            <Download size={16} />
-            Install
+          <a href="/splitpay.apk" download="SplitPay.apk" className="relative z-10 h-10 px-4 bg-emerald-500 hover:bg-emerald-400 text-white rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-lg shadow-emerald-500/30 active:scale-95">
+            <Download size={16} /> Install
           </a>
-
         </div>
       </div>
 

@@ -5,8 +5,8 @@ import { useGroup } from '../../context/GroupContext';
 import api from '../../services/api';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
-import { Tag, IndianRupee, Users, CheckCircle, ArrowLeft, User } from 'lucide-react';
-import { calculateSettlements } from '../../utils/settlementLogic'; // ✅ Import Added
+import { Tag, IndianRupee, Users, CheckCircle, ArrowLeft } from 'lucide-react';
+import { calculateSettlements } from '../../utils/settlementLogic';
 import toast from 'react-hot-toast';
 
 export default function AddExpense() {
@@ -21,7 +21,9 @@ export default function AddExpense() {
   // Form States
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
-  const paidBy = user?._id; 
+  
+  // ✅ UPDATED: Paid By State (Default to logged-in user)
+  const [paidBy, setPaidBy] = useState(user?._id || '');
   
   const [splitMethod, setSplitMethod] = useState('equal');
   const [customAmounts, setCustomAmounts] = useState({});
@@ -32,17 +34,17 @@ export default function AddExpense() {
     if (!groups.length) fetchGroups();
   }, []);
 
-  // When Group ID is selected or present
+  // When Group ID changes
   useEffect(() => {
     if (selectedGroupId) {
       const foundGroup = groups.find(g => g._id === selectedGroupId);
       if (foundGroup) {
         setGroup(foundGroup);
-        // Refresh details via API
-        api.get(`/groups/${selectedGroupId}`).then(({ data }) => setGroup(data));
+        // Default paidBy to current user when group loads
+        setPaidBy(user?._id); 
       }
     }
-  }, [selectedGroupId, groups]);
+  }, [selectedGroupId, groups, user]);
 
   const handleSubmit = async () => {
     if (!selectedGroupId) return toast.error('Please select a group');
@@ -67,7 +69,7 @@ export default function AddExpense() {
       await api.post(`/groups/${selectedGroupId}/expenses`, {
         description,
         amount: totalAmount,
-        paidBy,
+        paidBy, // ✅ Sending selected User ID
         splitMethod,
         shares
       });
@@ -80,13 +82,11 @@ export default function AddExpense() {
     }
   };
 
-  // ✅ Filter Logic: Hide fully settled groups
-  // Condition: Show if (No expenses yet) OR (Settlements > 0)
   const activeGroups = groups.filter(g => {
     const hasExpenses = g.expenses && g.expenses.length > 0;
-    if (!hasExpenses) return true; // Show new groups
+    if (!hasExpenses) return true; 
     const settlements = calculateSettlements(g.expenses, g.members);
-    return settlements.length > 0; // Show only if debts exist
+    return settlements.length > 0; 
   });
 
   return (
@@ -110,7 +110,6 @@ export default function AddExpense() {
                 onChange={e => setSelectedGroupId(e.target.value)}
               >
                 <option value="" disabled> Choose Group </option>
-                {/* ✅ Using activeGroups instead of groups */}
                 {activeGroups.map(g => (
                   <option key={g._id} value={g._id}>{g.name}</option>
                 ))}
@@ -133,14 +132,23 @@ export default function AddExpense() {
                     <Input icon={IndianRupee} type="number" value={amount} onChange={e => setAmount(e.target.value)} placeholder="0.00" />
                   </div>
                   
-                  {/* FIXED PAID BY SECTION */}
+                  {/* ✅ UPDATED: Paid By Dropdown */}
                   <div>
                     <label className="text-xs font-semibold text-slate-700 block mb-2">Paid By</label>
-                    <div className="flex items-center gap-2 h-11 w-full rounded-2xl border border-slate-200 bg-slate-100 px-3">
-                      <User size={16} className="text-slate-500" />
-                      <span className="text-sm font-semibold text-slate-900 truncate">
-                         {user?.name || 'You'}
-                      </span>
+                    <div className="relative">
+                      <select 
+                        value={paidBy}
+                        onChange={(e) => setPaidBy(e.target.value)}
+                        className="w-full h-11 rounded-2xl border border-slate-200 bg-slate-50 px-3 text-sm font-semibold outline-none appearance-none"
+                      >
+                        {group.members.map(member => (
+                           <option key={member._id} value={member._id}>
+                             {member._id === user._id ? 'You' : member.name.split(' ')[0]}
+                           </option>
+                        ))}
+                      </select>
+                      {/* Custom Arrow */}
+                      <div className="absolute right-3 top-3.5 pointer-events-none text-slate-400 text-[10px]">▼</div>
                     </div>
                   </div>
                 </div>
